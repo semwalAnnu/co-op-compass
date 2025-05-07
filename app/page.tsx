@@ -1,6 +1,10 @@
+'use client';
+import { useState } from 'react';
 import KanbanBoard from './components/KanbanBoard';
 
 export default function Home() {
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -14,6 +18,21 @@ export default function Home() {
               <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Dashboard</a>
               <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Applications</a>
               <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Settings</a>
+              {isSignedIn ? (
+                <button 
+                  onClick={() => setIsSignedIn(false)}
+                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                >
+                  Logout
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setIsSignedIn(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  Sign In
+                </button>
+              )}
             </nav>
           </div>
         </div>
