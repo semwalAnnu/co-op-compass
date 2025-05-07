@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import KanbanBoard from './components/KanbanBoard';
+import UrlInput from './components/UrlInput';
 
 export default function Home() {
   const [isSignedIn, setIsSignedIn] = useState(false);
@@ -40,31 +41,18 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <aside className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Stats</h2>
-              <div className="space-y-4">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-sm text-blue-600 dark:text-blue-400">Active Applications</p>
-                  <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">4</p>
-                </div>
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <p className="text-sm text-green-600 dark:text-green-400">Upcoming Deadlines</p>
-                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">2</p>
-                </div>
-              </div>
-            </div>
-          </aside>
+        <div className="space-y-6">
+              {/* URL Input Section */}
+              <section className="bg-gray-50 rounded-xl p-4 max-w-full">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Add New Application</h2>
+              <UrlInput />
+              </section>
 
-          {/* Main Content Area */}
-          <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Application Board</h2>
-              <KanbanBoard />
-            </div>
-          </div>
+          {/* Kanban Board */}
+          <section className="bg-gray-50 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Application Board</h2>
+            <KanbanBoard />
+          </section>
         </div>
       </main>
     </div>
