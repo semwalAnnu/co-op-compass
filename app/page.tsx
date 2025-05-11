@@ -7,9 +7,9 @@ export default function Home() {
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
+      <header className="bg-gray-900 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -40,17 +40,17 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="space-y-6">
-              {/* URL Input Section */}
-              <section className="bg-gray-50 rounded-xl p-4 max-w-full">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Add New Application</h2>
-              <UrlInput />
-              </section>
+          {/* URL Input Section */}
+          <section className="bg-gray-800 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-gray-100 mb-4">Add New Application</h2>
+            <UrlInput />
+          </section>
 
           {/* Kanban Board */}
-          <section className="bg-gray-50 rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Application Board</h2>
+          <section className="bg-gray-800 rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-gray-100 mb-4">Application Board</h2>
             <KanbanBoard />
           </section>
         </div>

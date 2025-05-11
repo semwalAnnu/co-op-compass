@@ -12,14 +12,14 @@ export default function UrlInput() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="w-full max-w-lg mx-auto">
+        <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
             <div className="flex gap-2">
                 <input
                     type="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="Paste job posting URL here..."
-                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent bg-gray-800 text-white placeholder-gray-400"
+                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                     required
                 />
                 <button

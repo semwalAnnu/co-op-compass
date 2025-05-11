@@ -1,7 +1,8 @@
 'use client';
 
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided } from '@hello-pangea/dnd';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { formatDate } from '../utils/dateFormatter';
 
 interface Application {
   id: string;
@@ -41,6 +42,12 @@ export default function KanbanBoard() {
       ],
     },
   ]);
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const onDragEnd = useCallback((result: DropResult) => {
     if (!result.destination) return;
@@ -95,8 +102,8 @@ export default function KanbanBoard() {
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {columns.map((column) => (
-          <div key={column.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-            <h3 className="font-medium text-gray-900 dark:text-white mb-4">{column.title}</h3>
+          <div key={column.id} className="bg-gray-50 rounded-lg p-4">
+            <h3 className="font-medium text-gray-900 mb-4">{column.title}</h3>
             <Droppable droppableId={column.id}>
               {(provided: DroppableProvided) => (
                 <div
@@ -115,17 +122,17 @@ export default function KanbanBoard() {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                          className="bg-gray-600 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
                         >
-                          <h4 className="font-medium text-gray-900 dark:text-white">
+                          <h4 className="font-medium text-white-900">
                             {application.content}
                           </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="text-sm text-white-600">
                             {application.company}
                           </p>
-                          {application.deadline && (
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                              Deadline: {new Date(application.deadline).toLocaleDateString()}
+                          {application.deadline && isClient && (
+                            <p className="text-xs text-white-500 mt-2">
+                              Deadline: {formatDate(application.deadline)}
                             </p>
                           )}
                         </div>
@@ -141,4 +148,4 @@ export default function KanbanBoard() {
       </div>
     </DragDropContext>
   );
-} 
+}
