@@ -102,7 +102,7 @@ export default function Home() {
           {/* Kanban Board */}
           <section className="bg-gray-800 rounded-xl p-6">
             <h2 className="text-lg font-semibold text-gray-100 mb-4">Application Board</h2>
-            <KanbanBoard columns={columns} setColumns={setColumns} onAddApplication={handleAddApplication} />
+            <KanbanBoard columns={columns} setColumns={setColumns} />
           </section>
         </div>
       </main>
