@@ -1,10 +1,61 @@
 'use client';
+
 import { useState } from 'react';
+
+interface Application {
+  id: string;
+  content: string;
+  company: string;
+  url: string;
+}
+
+interface Column {
+  id: string;
+  title: string;
+  applications: Application[];
+}
 import KanbanBoard from './components/KanbanBoard';
 import UrlInput from './components/UrlInput';
 
 export default function Home() {
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [columns, setColumns] = useState<Column[]>([
+    {
+      id: 'to-apply',
+      title: 'To Apply',
+      applications: []
+    },
+    {
+      id: 'in-progress',
+      title: 'In Progress',
+      applications: []
+    },
+    {
+      id: 'completed',
+      title: 'Completed',
+      applications: []
+    }
+  ]);
+
+  const handleAddApplication = (jobTitle: string, company: string, url: string) => {
+    setColumns(prevColumns => {
+      const toApplyColumn = prevColumns.find(col => col.id === 'to-apply');
+      if (!toApplyColumn) return prevColumns;
+
+      const newApplication = {
+        id: crypto.randomUUID(),
+        content: jobTitle,
+        company: company,
+        url: url
+      };
+
+      return prevColumns.map(col => 
+        col.id === 'to-apply'
+          ? { ...col, applications: [newApplication, ...col.applications] }
+          : col
+      );
+    });
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -45,13 +96,13 @@ export default function Home() {
           {/* URL Input Section */}
           <section className="bg-gray-800 rounded-xl p-6">
             <h2 className="text-lg font-semibold text-gray-100 mb-4">Add New Application</h2>
-            <UrlInput />
+            <UrlInput onAddApplication={handleAddApplication} />
           </section>
 
           {/* Kanban Board */}
           <section className="bg-gray-800 rounded-xl p-6">
             <h2 className="text-lg font-semibold text-gray-100 mb-4">Application Board</h2>
-            <KanbanBoard />
+            <KanbanBoard columns={columns} setColumns={setColumns} onAddApplication={handleAddApplication} />
           </section>
         </div>
       </main>

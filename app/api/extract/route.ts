@@ -7,7 +7,6 @@ interface RequestBody {
 interface JobData {
   jobTitle: string;
   company: string;
-  deadline?: string;
 }
 
 export async function POST(request: Request) {
@@ -35,7 +34,6 @@ export async function POST(request: Request) {
       return NextResponse.json({
         jobTitle: jsonLd.title,
         company: jsonLd.hiringOrganization?.name,
-        deadline: jsonLd.validThrough,
       });
     }
 
@@ -43,7 +41,6 @@ export async function POST(request: Request) {
     return NextResponse.json({
       jobTitle: data.title || data.og?.title || 'Unknown Position',
       company: data.author || data.publisher || extractCompanyFromUrl(body.url),
-      deadline: data.meta?.applicationDeadline,
     });
 
   } catch (error) {

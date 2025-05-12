@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 
-export default function UrlInput() {
+interface UrlInputProps {
+  onAddApplication: (jobTitle: string, company: string, url: string) => void;
+}
+
+export default function UrlInput({ onAddApplication }: UrlInputProps) {
     const [url, setUrl] = useState('');
     const [success, setSuccess] = useState(false);
 
@@ -20,7 +24,7 @@ export default function UrlInput() {
             }
 
             const data = await response.json();
-            console.log('Extracted job data:', data);
+            onAddApplication(data.jobTitle, data.company, url);
             setUrl('');
             setSuccess(true);
             setTimeout(() => setSuccess(false), 3000); // Hide after 3 seconds
