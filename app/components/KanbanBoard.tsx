@@ -46,6 +46,20 @@ export default function KanbanBoard({ columns, setColumns }: KanbanBoardProps) {
     setEditingId(null);
   };
 
+  const handleDelete = (columnId: string, applicationId: string) => {
+    if (!confirm('Are you sure you want to delete this application?')) return;
+    
+    setColumns(prevColumns => {
+      return prevColumns.map(col => {
+        if (col.id !== columnId) return col;
+        return {
+          ...col,
+          applications: col.applications.filter(app => app.id !== applicationId)
+        };
+      });
+    });
+  };
+
   const onDragEnd = useCallback((result: DropResult) => {
     if (!result.destination) return;
     const { source, destination } = result;
@@ -103,13 +117,27 @@ export default function KanbanBoard({ columns, setColumns }: KanbanBoardProps) {
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           style={getStyle(provided.draggableProps.style, snapshot)}
-                          className={`group bg-gray-800 rounded-lg p-4 border border-gray-700 ${
+                          className={`group bg-gray-800 rounded-lg p-4 border border-gray-700 relative ${
                             snapshot.isDragging
                               ? 'shadow-lg ring-2 ring-blue-500/50'
                               : 'shadow-sm hover:shadow-md'
                           } transition-all duration-200`}
                         >
-                          <div className="flex items-center justify-between mb-2 group">
+                          {/* Delete Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(column.id, application.id);
+                            }}
+                            className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full 
+                              opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                              text-red-500 hover:text-red-300 hover:bg-red-500/10"
+                            aria-label="Delete application"
+                          >
+                            ×
+                          </button>
+
+                          <div className="flex items-center justify-between mb-2 group pt-1">
                             {editingId === application.id ? (
                               <div className="flex-1 flex items-center gap-2">
                                 <input
@@ -121,13 +149,14 @@ export default function KanbanBoard({ columns, setColumns }: KanbanBoardProps) {
                                 />
                                 <button
                                   onClick={() => handleSave(column.id, application.id)}
-                                  className="text-sm px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                  className="text-xs px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors ml-2"
                                 >
                                   Save
                                 </button>
+                  
                                 <button
                                   onClick={() => setEditingId(null)}
-                                  className="text-sm px-2 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                                  className="text-xs px-2 py-1.5 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
                                 >
                                   Cancel
                                 </button>
