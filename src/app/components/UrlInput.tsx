@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { Application } from '@/types/User';
 
 interface UrlInputProps {
   onAddApplication: (jobTitle: string, company: string, url: string) => void;

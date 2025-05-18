@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { redirect } from "next/navigation";
 
 interface Application {
   id: string;
@@ -56,6 +57,8 @@ export default function Home() {
       );
     });
   };
+
+  redirect("/sign-in");
 
   return (
     <div className="min-h-screen bg-black">

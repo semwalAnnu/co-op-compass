@@ -1,0 +1,8 @@
+name = "co-op-compass"
+main = "src/index.ts"
+compatibility_date = "2024-03-20"
+
+# KV Namespace binding
+kv_namespaces = [
+  { binding = "USERS", id = "2c9e77181e594c49803fefc51a1dc882", preview_id = "a996b70dc7e5486e83edbd499990a055" }
+]

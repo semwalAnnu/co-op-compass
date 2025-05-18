@@ -1,0 +1,7 @@
+{
+  "users:usr_df1245dab2b74164be32f648e45274ed": "{\"id\":\"usr_df1245dab2b74164be32f648e45274ed\",\"email\":\"dev@test.com\",\"name\":\"Developer\",\"passwordHash\":\"$2b$10$Ljq5wQvDjnLCZNNy0St4f.K/x/DKcm4ZFB13qi9vmsw/Y.YTVbCxK\",\"createdAt\":\"2025-05-15T00:00:20.435Z\"}",
+  "emails:dev@test.com": "usr_df1245dab2b74164be32f648e45274ed",
+  "user:usr_be128a9fbf0f4423a2cb4d9125581d18": "{\"id\":\"usr_be128a9fbf0f4423a2cb4d9125581d18\",\"email\":\"dev@test.com\",\"name\":\"Developer\",\"passwordHash\":\"$2b$10$vn50Bx8Tcu3Ee9h413uTV.aq7DhQ/xkjNS3d2LrH40//j.lgLG7SK\",\"createdAt\":\"2025-05-15T00:03:06.829Z\"}",
+  "email:dev@test.com": "usr_be128a9fbf0f4423a2cb4d9125581d18",
+  "user:dev@email.co": "{\"id\":\"usr_177f53863722464db3a3669da1ecd5f2\",\"email\":\"dev@email.co\",\"name\":\"Develop\",\"passwordHash\":\"$2b$10$PrEvUiPQNxCrpIRpJfE2UOuX7LU4SM4P7Zkga42s4XUGAd26ev792\",\"createdAt\":\"2025-05-15T01:01:16.535Z\"}"
+}
