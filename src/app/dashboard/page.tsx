@@ -331,29 +331,6 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <header className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-xl font-semibold text-gray-100">Co-Op Compass</h1>
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-300">
-                  {user?.firstName ? `Welcome, ${user.firstName}` : user?.emailAddresses[0].emailAddress}
-                </span>
-                <UserButton 
-                  afterSignOutUrl="/sign-in"
-                  appearance={{
-                    elements: {
-                      avatarBox: "w-8 h-8"
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
@@ -379,6 +356,5 @@ export default function DashboardPage() {
           </section>
         </div>
       </main>
-    </div>
   );
 }

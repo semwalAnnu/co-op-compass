@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
+import Nav from "./components/Nav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,8 +27,11 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          {children}
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}>
+          <Nav />
+          <div className="pt-16"> {/* Add padding for fixed nav */}
+            {children}
+          </div>
         </body>
       </html>
     </ClerkProvider>
