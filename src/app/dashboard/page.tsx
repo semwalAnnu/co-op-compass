@@ -332,7 +332,7 @@ export default function DashboardPage() {
 
   return (
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-black/80 rounded-lg">
         <div className="space-y-6">
           <section className="bg-gray-800 rounded-xl p-6">
             <h2 className="text-lg font-semibold text-gray-100 mb-4">
