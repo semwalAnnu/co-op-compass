@@ -22,3 +22,12 @@ export interface JobData {
   company: string;
   url: string;
 }
+
+export interface Card {
+  id: string;
+  userId: string;
+  company: string;
+  role: string;
+  url: string;
+  status: "TO_APPLY" | "IN_PROGRESS" | "COMPLETED";
+}

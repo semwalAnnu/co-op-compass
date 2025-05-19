@@ -2,6 +2,7 @@
 
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useState, useCallback, Dispatch, SetStateAction } from 'react';
+import type { Card } from '@/types/User';
 
 interface Application {
   id: string;
@@ -19,9 +20,13 @@ interface Column {
 interface KanbanBoardProps {
   columns: Column[];
   setColumns: Dispatch<SetStateAction<Column[]>>;
+  onDeleteCard: (cardId: string) => Promise<void>;
+  onUpdateCard: (card: Card) => Promise<void>;
+  mapColumnIdToCardStatus: (columnId: string) => Card['status'];
+  userId: string;
 }
 
-export default function KanbanBoard({ columns, setColumns }: KanbanBoardProps) {
+export default function KanbanBoard({ columns, setColumns, onDeleteCard, onUpdateCard, mapColumnIdToCardStatus, userId }: KanbanBoardProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
 
@@ -38,7 +43,21 @@ export default function KanbanBoard({ columns, setColumns }: KanbanBoardProps) {
           ...col,
           applications: col.applications.map(app => {
             if (app.id !== applicationId) return app;
-            return { ...app, content: editValue };
+            const originalApp = col.applications.find(a => a.id === applicationId);
+            if (!originalApp) return app;
+
+            const updatedApp = { ...originalApp, content: editValue };
+            
+            const cardToUpdate: Card = {
+                id: updatedApp.id,
+                userId: userId,
+                company: updatedApp.company,
+                role: updatedApp.content,
+                url: updatedApp.url,
+                status: mapColumnIdToCardStatus(col.id)
+            };
+            onUpdateCard(cardToUpdate);
+            return updatedApp;
           })
         };
       });
@@ -48,21 +67,16 @@ export default function KanbanBoard({ columns, setColumns }: KanbanBoardProps) {
 
   const handleDelete = (columnId: string, applicationId: string) => {
     if (!confirm('Are you sure you want to delete this application?')) return;
-    
-    setColumns(prevColumns => {
-      return prevColumns.map(col => {
-        if (col.id !== columnId) return col;
-        return {
-          ...col,
-          applications: col.applications.filter(app => app.id !== applicationId)
-        };
-      });
-    });
+    onDeleteCard(applicationId);
   };
 
   const onDragEnd = useCallback((result: DropResult) => {
     if (!result.destination) return;
     const { source, destination } = result;
+
+    let movedApplication: Application | undefined;
+    let originalStatus: Card['status'] | undefined;
+    let newStatus: Card['status'] | undefined;
 
     setColumns((prevColumns: Column[]) => {
       const sourceCol = prevColumns.find((col: Column) => col.id === source.droppableId);
@@ -77,6 +91,10 @@ export default function KanbanBoard({ columns, setColumns }: KanbanBoardProps) {
 
       const [removed] = sourceApps.splice(source.index, 1);
       destApps.splice(destination.index, 0, removed);
+      
+      movedApplication = removed;
+      originalStatus = mapColumnIdToCardStatus(source.droppableId);
+      newStatus = mapColumnIdToCardStatus(destination.droppableId);
 
       return prevColumns.map((col: Column) => {
         if (col.id === source.droppableId) {
@@ -88,7 +106,19 @@ export default function KanbanBoard({ columns, setColumns }: KanbanBoardProps) {
         return col;
       });
     });
-  }, []);
+
+    if (movedApplication && newStatus && originalStatus !== newStatus) {
+        const cardToUpdate: Card = {
+            id: movedApplication.id,
+            userId: userId,
+            company: movedApplication.company,
+            role: movedApplication.content,
+            url: movedApplication.url,
+            status: newStatus
+        };
+        onUpdateCard(cardToUpdate);
+    }
+  }, [setColumns, onUpdateCard, mapColumnIdToCardStatus, userId]);
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
