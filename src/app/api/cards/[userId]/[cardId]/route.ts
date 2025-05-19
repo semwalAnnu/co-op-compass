@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import type { Card } from '@/types/User';
 
@@ -8,9 +8,8 @@ if (!WORKER_URL) {
   console.error("[API Route /cards/[userId]/[cardId]] CRITICAL: WORKER_URL environment variable is not set or empty.");
 }
 
-// Definition of makeWorkerRequest - Copied from the original route.ts for now.
-// Consider refactoring to a shared utility if used in more places.
-async function makeWorkerRequest(path: string, method: string, body?: any) {
+// Definition of makeWorkerRequest
+async function makeWorkerRequest(path: string, method: string, body?: Record<string, unknown> | Card) {
   if (!WORKER_URL) {
     console.error('[API Route /cards/[userId]/[cardId]] CRITICAL: WORKER_URL is not available. Ensure .env.local is loaded.');
     return NextResponse.json({ error: 'Worker service misconfigured (URL missing)' }, { status: 503 });
@@ -49,37 +48,47 @@ async function makeWorkerRequest(path: string, method: string, body?: any) {
         statusText: response.statusText,
         responseText,
       });
-      let errorJson = { error: `Worker responded with ${response.status}: ${responseText.substring(0, 200)}` };
+      // eslint-disable-next-line prefer-const
+      let errorJsonPayload = { error: `Worker responded with ${response.status}: ${responseText.substring(0, 200)}` };
       try {
         const parsed = JSON.parse(responseText);
         if (parsed && parsed.error) {
-            errorJson.error = parsed.error;
+            errorJsonPayload.error = parsed.error;
         }
-      } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_parseError) { 
         console.warn('[API Route /cards/[userId]/[cardId]] Worker error response was not JSON.');
       }
-      return NextResponse.json(errorJson, { status: response.status });
+      return NextResponse.json(errorJsonPayload, { status: response.status });
     }
 
     try {
       const data = JSON.parse(responseText);
       console.log('[API Route /cards/[userId]/[cardId]] Successfully parsed worker JSON response.');
       return NextResponse.json(data, { status: response.status });
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Unknown parsing error';
       console.error('[API Route /cards/[userId]/[cardId]] Worker successful response (2xx) was not valid JSON:', {
         responseText,
-        parseErrorMessage: e.message,
+        parseErrorMessage: errorMessage,
       });
       return NextResponse.json({ error: 'Worker returned a successful but non-JSON response.' }, { status: 502 });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown fetch error';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const errorCode = error && typeof error === 'object' && 'code' in error ? (error as any).code : undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const errorCause = error && typeof error === 'object' && 'cause' in error ? (error as any).cause : undefined;
+
+
     console.error('[API Route /cards/[userId]/[cardId]] Network or fetch error while communicating with worker:', {
       url,
       method,
-      errorMessage: error.message,
-      errorCode: error.code,
-      errorCause: error.cause,
+      errorMessage: errorMessage,
+      errorCode: errorCode,
+      errorCause: errorCause,
       usedWorkerUrl: WORKER_URL,
     });
     return NextResponse.json(
@@ -90,32 +99,32 @@ async function makeWorkerRequest(path: string, method: string, body?: any) {
 }
 
 // PUT - Update a specific card
-export async function PUT(req: NextRequest, { params }: { params: { userId: string; cardId: string } }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function PUT(req: NextRequest, { params }: any) {
   const authResult = await auth();
   if (!authResult.userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const requestingUserId = authResult.userId;
-  const { userId: pathUserId, cardId } = params;
+  const { userId: pathUserId, cardId } = params; 
 
   if (requestingUserId !== pathUserId) {
     console.warn(`[API Route /cards/[userId]/[cardId]] Forbidden: User ${requestingUserId} attempted to update card for ${pathUserId}.`);
     return NextResponse.json({ error: 'Forbidden: You can only update your own cards.' }, { status: 403 });
   }
 
-  if (!cardId) { // Should be guaranteed by path structure, but good for defense.
+  if (!cardId) { 
     return NextResponse.json({ error: 'Card ID is missing in the path.' }, { status: 400 });
   }
-   if (!pathUserId) { // Should be guaranteed by path structure.
+   if (!pathUserId) { 
     return NextResponse.json({ error: 'User ID is missing in the path.' }, { status: 400 });
   }
 
-
   try {
-    const cardData = await req.json();
+    const cardData = await req.json(); 
     const cardToUpdate: Card = {
       ...cardData,
-      userId: pathUserId, // Ensure the userId from the path is used for consistency
+      userId: pathUserId, 
       id: cardId,
     };
 
@@ -128,13 +137,15 @@ export async function PUT(req: NextRequest, { params }: { params: { userId: stri
 }
 
 // DELETE - Delete a specific card
-export async function DELETE(req: NextRequest, { params }: { params: { userId: string; cardId: string } }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function DELETE(req: NextRequest, { params }: any) {
   const authResult = await auth();
+    
   if (!authResult.userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const requestingUserId = authResult.userId;
-  const { userId: pathUserId, cardId } = params;
+  const { userId: pathUserId, cardId } = params; 
 
   if (requestingUserId !== pathUserId) {
     console.warn(`[API Route /cards/[userId]/[cardId]] Forbidden: User ${requestingUserId} attempted to delete card for ${pathUserId}.`);

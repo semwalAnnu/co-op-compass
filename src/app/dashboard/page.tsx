@@ -172,7 +172,7 @@ export default function DashboardPage() {
       if (savedCard.id !== newCardId) {
           console.warn("Server returned a different ID for the new card.");
           setColumns(prevColumns => {
-            let columnsWithoutTemp = prevColumns.map(col => ({
+            const columnsWithoutTemp = prevColumns.map(col => ({
                 ...col,
                 applications: col.applications.filter(app => app.id !== newCardId)
             }));
@@ -225,8 +225,8 @@ export default function DashboardPage() {
         let errorData = { error: `Failed to delete card. Status: ${response.status}` };
         try {
           errorData = await response.json();
-        } catch (e) {
-          // If response is not JSON, use the status text or a generic message
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_e) { 
           errorData.error = response.statusText || errorData.error;
         }
         console.error("[DashboardPage] Error deleting card:", response.status, errorData);
@@ -251,7 +251,7 @@ export default function DashboardPage() {
     const originalColumns = columns;
 
     setColumns(prevColumns => {
-      let columnsWithoutOld = prevColumns.map(col => ({
+      const columnsWithoutOld = prevColumns.map(col => ({
         ...col,
         applications: col.applications.filter(app => app.id !== updatedCard.id)
       }));
@@ -284,7 +284,7 @@ export default function DashboardPage() {
       }
       const savedCard: Card = await response.json();
       setColumns(prevColumns => {
-        let columnsWithoutOld = prevColumns.map(col => ({
+        const columnsWithoutOld = prevColumns.map(col => ({
           ...col,
           applications: col.applications.filter(app => app.id !== savedCard.id)
         }));

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { redirect } from "next/navigation";
+import type { Card } from '@/types/User';
 
 interface Application {
   id: string;
@@ -64,7 +65,7 @@ export default function Home() {
     // No actual deletion logic for homepage context
   };
 
-  const dummyOnUpdateCard = async (card: any) => { // Using any for Card type for simplicity here
+  const dummyOnUpdateCard = async (card: Card) => { // Use Card type
     console.log('[Homepage] Attempted to update card:', card);
     // No actual update logic for homepage context
   };
@@ -131,7 +132,7 @@ export default function Home() {
               mapColumnIdToCardStatus={dummyMapColumnIdToCardStatus}
               userId="anonymous" // Placeholder userId
             />
-="max-w-7xl mx-auto px-4 sm:px          </section>
+          </section>
         </div>
       </main>
     </div>

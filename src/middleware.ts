@@ -1,21 +1,14 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware } from '@clerk/nextjs/server';
 
-export default clerkMiddleware(
-  (auth, req) => {
-    // Keep users on our domain during auth flow
-  },
-  (req) => ({
-    // Configure Clerk to use our domain and paths
-    signInUrl: '/sign-in',
-    signUpUrl: '/sign-up',
-    // Use the current host as domain
-    domain: req.headers.get('host') || 'localhost:3000'
-  })
-);
+export default clerkMiddleware({
+  // publicRoutes: ['/', '/api/extract(.*)'], // Add any routes here that should be accessible to unauthenticated users
+  // ignoredRoutes: ['/some/webhook/route'] // Add any routes here that Clerk should completely ignore
+});
 
 export const config = {
   matcher: [
-    "/((?!.*\\..*|_next).*)",
-    "/(api|trpc)(.*)"
-  ]
+    // Ensure Clerk runs on all routes except static files and Next.js internals
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
+    '/', 
+  ],
 };

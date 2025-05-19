@@ -9,7 +9,7 @@ if (!WORKER_URL) {
   console.error("[API Route /cards] CRITICAL: WORKER_URL environment variable is not set or empty.");
 }
 
-async function makeWorkerRequest(path: string, method: string, body?: any) {
+async function makeWorkerRequest(path: string, method: string, body?: Record<string, unknown> | Card ) {
   if (!WORKER_URL) {
     console.error('[API Route /cards] CRITICAL: WORKER_URL is not available. Ensure .env.local is loaded.');
     return NextResponse.json({ error: 'Worker service misconfigured (URL missing)' }, { status: 503 });
@@ -48,37 +48,46 @@ async function makeWorkerRequest(path: string, method: string, body?: any) {
         statusText: response.statusText,
         responseText,
       });
-      let errorJson = { error: `Worker responded with ${response.status}: ${responseText.substring(0, 200)}` };
+      // eslint-disable-next-line prefer-const
+      let errorJsonPayload = { error: `Worker responded with ${response.status}: ${responseText.substring(0, 200)}` };
       try {
         const parsed = JSON.parse(responseText);
         if (parsed && parsed.error) {
-            errorJson.error = parsed.error;
+            errorJsonPayload.error = parsed.error;
         }
-      } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_parseError) { 
         console.warn('[API Route /cards] Worker error response was not JSON.');
       }
-      return NextResponse.json(errorJson, { status: response.status });
+      return NextResponse.json(errorJsonPayload, { status: response.status });
     }
 
     try {
       const data = JSON.parse(responseText);
       console.log('[API Route /cards] Successfully parsed worker JSON response.');
       return NextResponse.json(data, { status: response.status });
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Unknown parsing error';
       console.error('[API Route /cards] Worker successful response (2xx) was not valid JSON:', {
         responseText,
-        parseErrorMessage: e.message,
+        parseErrorMessage: errorMessage,
       });
       return NextResponse.json({ error: 'Worker returned a successful but non-JSON response.' }, { status: 502 });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown fetch error';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const errorCode = error && typeof error === 'object' && 'code' in error ? (error as any).code : undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const errorCause = error && typeof error === 'object' && 'cause' in error ? (error as any).cause : undefined;
+
     console.error('[API Route /cards] Network or fetch error while communicating with worker:', {
       url,
       method,
-      errorMessage: error.message,
-      errorCode: error.code,
-      errorCause: error.cause,
+      errorMessage: errorMessage,
+      errorCode: errorCode,
+      errorCause: errorCause,
       usedWorkerUrl: WORKER_URL,
     });
     return NextResponse.json(
@@ -112,7 +121,8 @@ export async function POST(req: NextRequest) {
 }
 
 // GET - Get all cards for the authenticated user
-export async function GET(req: NextRequest) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function GET(_req: NextRequest) { 
   const authResult = await auth();
   if (!authResult.userId) {
     console.error('[API Route /cards] Unauthorized request to GET /api/cards');

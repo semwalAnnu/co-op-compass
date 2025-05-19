@@ -3,6 +3,7 @@
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useState, useCallback, Dispatch, SetStateAction } from 'react';
 import type { Card } from '@/types/User';
+import { DraggableProvidedDraggableProps, DraggableStateSnapshot } from '@hello-pangea/dnd';
 
 interface Application {
   id: string;
@@ -242,8 +243,8 @@ export default function KanbanBoard({ columns, setColumns, onDeleteCard, onUpdat
 }
 
 // Helper function to handle drag styles
-const getStyle = (style: any, snapshot: any) => {
-  if (!snapshot.isDropping) {
+const getStyle = (style: DraggableProvidedDraggableProps['style'], snapshot: DraggableStateSnapshot) => {
+  if (!snapshot.isDropAnimating) {
     return style;
   }
   

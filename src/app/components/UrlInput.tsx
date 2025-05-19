@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Application } from '@/types/User';
+// import { Application } from '@/types/User'; // Commented out as unused
 
 interface UrlInputProps {
   onAddApplication: (jobTitle: string, company: string, url: string) => void;

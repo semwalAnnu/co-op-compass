@@ -1,17 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+// import { JobData } from '@/types/User'; // Commented out as unused
 
 interface RequestBody {
   url: string;
 }
 
-interface JobData {
+/*
+interface JobData { // Commenting out local JobData as it's unused and causing build errors
   jobTitle: string;
   company: string;
 }
+*/
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json() as RequestBody;
+    const body = await req.json() as RequestBody;
     
     if (!body.url || !isValidUrl(body.url)) {
       return NextResponse.json(
