@@ -124,6 +124,7 @@ export default function DashboardPage() {
     if (!user) return;
 
     const newCardId = crypto.randomUUID();
+    console.log('[handleAddApplication] Generated client-side newCardId:', newCardId);
     const newCardData: Card = {
       id: newCardId,
       userId: user.id,
@@ -150,15 +151,19 @@ export default function DashboardPage() {
     });
 
     try {
+      console.log('[handleAddApplication] Sending newCardData to /api/cards:', newCardData);
       const response = await fetch('/api/cards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCardData),
       });
 
+      console.log('[handleAddApplication] Response from /api/cards status:', response.status);
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to add card, server error.' }));
-        console.error("Error adding application:", response.status, errorData);
+        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error JSON from /api/cards' }));
+        console.error("[handleAddApplication] Error adding application via /api/cards:", response.status, errorData);
+        // Revert optimistic update
         setColumns(prevColumns => 
             prevColumns.map(col => ({
                 ...col,
@@ -169,13 +174,18 @@ export default function DashboardPage() {
       }
       
       const savedCard: Card = await response.json();
+      console.log('[handleAddApplication] Received savedCard from /api/cards:', savedCard);
+      console.log(`[handleAddApplication] Comparing client ID (${newCardId}) vs server ID (${savedCard.id})`);
+
       if (savedCard.id !== newCardId) {
-          console.warn("Server returned a different ID for the new card.");
+          console.warn("[handleAddApplication] Server returned a different ID for the new card. Updating UI.");
           setColumns(prevColumns => {
+            // Remove temporary card
             const columnsWithoutTemp = prevColumns.map(col => ({
                 ...col,
                 applications: col.applications.filter(app => app.id !== newCardId)
             }));
+            // Add confirmed card
             const actualTargetColumnId = mapCardStatusToColumnId(savedCard.status);
             const appFromSavedCard: Application = {
                 id: savedCard.id,
@@ -185,13 +195,18 @@ export default function DashboardPage() {
             };
             return columnsWithoutTemp.map(col => 
                 col.id === actualTargetColumnId
-                ? { ...col, applications: [appFromSavedCard, ...col.applications.filter(app => app.id !== savedCard.id)] }
+                ? { ...col, applications: [appFromSavedCard, ...col.applications.filter(app => app.id !== savedCard.id)] } // Ensure not to duplicate if already present by some chance
                 : col
             );
           });
+      } else {
+        console.log("[handleAddApplication] Server confirmed the same ID. Optimistic update stands.");
+        // Potentially refresh or ensure data consistency if needed, though optimistic should cover it.
+        // fetchAndSetCards(); // Could be called here if there are doubts about overall consistency
       }
     } catch (error) {
-      console.error("Error in handleAddApplication try-catch:", error);
+      console.error("[handleAddApplication] Error in try-catch block:", error);
+      // Revert optimistic update
       setColumns(prevColumns => 
         prevColumns.map(col => ({
             ...col,

@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-CGqZuC/checked-fetch.js
+// .wrangler/tmp/bundle-GfRUmB/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -27,7 +27,7 @@ globalThis.fetch = new Proxy(globalThis.fetch, {
   }
 });
 
-// .wrangler/tmp/bundle-CGqZuC/strip-cf-connecting-ip-header.js
+// .wrangler/tmp/bundle-GfRUmB/strip-cf-connecting-ip-header.js
 function stripCfConnectingIPHeader(input, init) {
   const request = new Request(input, init);
   request.headers.delete("CF-Connecting-IP");
@@ -6123,8 +6123,7 @@ var CardSchema = z.object({
   userId: z.string(),
   company: z.string(),
   role: z.string(),
-  // This corresponds to job title or Application.content
-  url: z.string().url(),
+  url: z.string(),
   status: z.enum(["TO_APPLY", "IN_PROGRESS", "COMPLETED"])
 });
 var app = new Hono2();
@@ -6201,7 +6200,19 @@ app.delete("/cards/:userId/:cardId", async (c) => {
   await c.env.CARDS.delete(key);
   return c.json({ success: true, id: cardId });
 });
-var worker_default = app;
+app.get("/", (c) => c.json({ status: "Worker is running" }));
+app.options("*", (c) => {
+  return new Response(null, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
+    }
+  });
+});
+var worker_default = {
+  fetch: app.fetch
+};
 
 // node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
 var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
@@ -6244,7 +6255,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-CGqZuC/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-GfRUmB/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -6276,7 +6287,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-CGqZuC/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-GfRUmB/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

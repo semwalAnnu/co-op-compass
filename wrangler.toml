@@ -7,5 +7,5 @@ ENVIRONMENT = "development"
 
 [[kv_namespaces]]
 binding = "CARDS"
-id = "demo"
-preview_id = "demo"
+id = "fd0a944815424776a2e9ec8f5e61c840"
+preview_id = "7b8c34d4371844d59debc1bca41271a7"

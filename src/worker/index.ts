@@ -9,8 +9,8 @@ const CardSchema = z.object({
   id: z.string(),
   userId: z.string(),
   company: z.string(),
-  role: z.string(), // This corresponds to job title or Application.content
-  url: z.string().url(),
+  role: z.string(),
+  url: z.string(),
   status: z.enum(['TO_APPLY', 'IN_PROGRESS', 'COMPLETED'])
 });
 
@@ -122,4 +122,20 @@ app.delete('/cards/:userId/:cardId', async (c) => {
   return c.json({ success: true, id: cardId });
 });
 
-export default app;
+// Add debug route to verify worker is running
+app.get('/', (c) => c.json({ status: 'Worker is running' }));
+
+// Add catch-all OPTIONS handler for CORS
+app.options('*', (c) => {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    }
+  });
+});
+
+export default {
+  fetch: app.fetch,
+};
