@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-BiCNoe/checked-fetch.js
+// .wrangler/tmp/bundle-IYqRpa/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -6112,13 +6112,26 @@ var CardSchema = z.object({
   status: z.enum(["TO_APPLY", "IN_PROGRESS", "COMPLETED"])
 });
 var app = new Hono2();
-app.use("*", cors());
+app.use("*", cors({
+  origin: "*",
+  allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowHeaders: ["Content-Type", "Authorization"],
+  exposeHeaders: ["Content-Length"],
+  maxAge: 600,
+  credentials: true
+}));
+app.get("/", (c) => c.json({ status: "ok" }));
 var getCardKey = /* @__PURE__ */ __name((userId, cardId) => `${userId}:${cardId}`, "getCardKey");
 app.post("/cards", zValidator("json", CardSchema), async (c) => {
-  const card = c.req.valid("json");
-  const key = getCardKey(card.userId, card.id);
-  await c.env.CARDS.put(key, JSON.stringify(card));
-  return c.json(card, 201);
+  try {
+    const card = c.req.valid("json");
+    const key = getCardKey(card.userId, card.id);
+    await c.env.CARDS.put(key, JSON.stringify(card));
+    return c.json(card, 201);
+  } catch (error) {
+    console.error("Error creating card:", error);
+    return c.json({ error: "Failed to create card" }, 500);
+  }
 });
 app.get("/cards/:userId", async (c) => {
   try {
@@ -6154,43 +6167,54 @@ app.get("/cards/:userId", async (c) => {
   }
 });
 app.get("/cards/:userId/:cardId", async (c) => {
-  const { userId, cardId } = c.req.param();
-  const key = getCardKey(userId, cardId);
-  const value = await c.env.CARDS.get(key);
-  if (!value) {
-    return c.json({ error: "Card not found" }, 404);
+  try {
+    const { userId, cardId } = c.req.param();
+    const key = getCardKey(userId, cardId);
+    const value = await c.env.CARDS.get(key);
+    if (!value) {
+      return c.json({ error: "Card not found" }, 404);
+    }
+    return c.json(JSON.parse(value));
+  } catch (error) {
+    console.error("Error getting card:", error);
+    return c.json({ error: "Failed to get card" }, 500);
   }
-  return c.json(JSON.parse(value));
 });
 app.put("/cards/:userId/:cardId", zValidator("json", CardSchema), async (c) => {
-  const cardData = c.req.valid("json");
-  const { userId, cardId } = c.req.param();
-  if (cardData.userId !== userId || cardData.id !== cardId) {
-    return c.json({ error: "Card ID or User ID mismatch in payload vs. path" }, 400);
+  try {
+    const cardData = c.req.valid("json");
+    const { userId, cardId } = c.req.param();
+    if (cardData.userId !== userId || cardData.id !== cardId) {
+      return c.json({ error: "Card ID or User ID mismatch in payload vs. path" }, 400);
+    }
+    const key = getCardKey(userId, cardId);
+    const existing = await c.env.CARDS.get(key);
+    if (!existing) {
+      return c.json({ error: "Card not found" }, 404);
+    }
+    await c.env.CARDS.put(key, JSON.stringify(cardData));
+    return c.json(cardData);
+  } catch (error) {
+    console.error("Error updating card:", error);
+    return c.json({ error: "Failed to update card" }, 500);
   }
-  const key = getCardKey(userId, cardId);
-  const existing = await c.env.CARDS.get(key);
-  if (!existing) {
-    return c.json({ error: "Card not found" }, 404);
-  }
-  if (!["TO_APPLY", "IN_PROGRESS", "COMPLETED"].includes(cardData.status)) {
-    return c.json({ error: "Invalid status value" }, 400);
-  }
-  await c.env.CARDS.put(key, JSON.stringify(cardData));
-  return c.json(cardData);
 });
 app.delete("/cards/:userId/:cardId", async (c) => {
-  const { userId, cardId } = c.req.param();
-  const key = getCardKey(userId, cardId);
-  await c.env.CARDS.delete(key);
-  return c.json({ success: true, id: cardId });
-});
-var worker = {
-  async fetch(request, env) {
-    return app.fetch(request, env);
+  try {
+    const { userId, cardId } = c.req.param();
+    const key = getCardKey(userId, cardId);
+    const existing = await c.env.CARDS.get(key);
+    if (!existing) {
+      return c.json({ error: "Card not found" }, 404);
+    }
+    await c.env.CARDS.delete(key);
+    return c.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting card:", error);
+    return c.json({ error: "Failed to delete card" }, 500);
   }
-};
-var worker_default = worker;
+});
+var worker_default = app;
 
 // ../../../../../opt/homebrew/lib/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
 var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
@@ -6233,7 +6257,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-BiCNoe/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-IYqRpa/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -6265,7 +6289,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-BiCNoe/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-IYqRpa/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -6283,31 +6307,31 @@ var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
     this.#noRetry();
   }
 };
-function wrapExportedHandler(worker2) {
+function wrapExportedHandler(worker) {
   if (__INTERNAL_WRANGLER_MIDDLEWARE__ === void 0 || __INTERNAL_WRANGLER_MIDDLEWARE__.length === 0) {
-    return worker2;
+    return worker;
   }
   for (const middleware of __INTERNAL_WRANGLER_MIDDLEWARE__) {
     __facade_register__(middleware);
   }
   const fetchDispatcher = /* @__PURE__ */ __name(function(request, env, ctx) {
-    if (worker2.fetch === void 0) {
+    if (worker.fetch === void 0) {
       throw new Error("Handler does not export a fetch() function.");
     }
-    return worker2.fetch(request, env, ctx);
+    return worker.fetch(request, env, ctx);
   }, "fetchDispatcher");
   return {
-    ...worker2,
+    ...worker,
     fetch(request, env, ctx) {
       const dispatcher = /* @__PURE__ */ __name(function(type, init) {
-        if (type === "scheduled" && worker2.scheduled !== void 0) {
+        if (type === "scheduled" && worker.scheduled !== void 0) {
           const controller = new __Facade_ScheduledController__(
             Date.now(),
             init.cron ?? "",
             () => {
             }
           );
-          return worker2.scheduled(controller, env, ctx);
+          return worker.scheduled(controller, env, ctx);
         }
       }, "dispatcher");
       return __facade_invoke__(request, env, ctx, dispatcher, fetchDispatcher);

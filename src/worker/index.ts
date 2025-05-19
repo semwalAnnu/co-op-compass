@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { KVNamespace } from '@cloudflare/workers-types';
 
-// Define the Card schema from src/types/User.ts
+// Define the Card schema
 const CardSchema = z.object({
   id: z.string(),
   userId: z.string(),
@@ -22,18 +22,33 @@ interface Env {
 
 const app = new Hono<{ Bindings: Env }>();
 
-// Enable CORS for all routes
-app.use('*', cors());
+// Enable CORS for all routes with specific configuration
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  exposeHeaders: ['Content-Length'],
+  maxAge: 600,
+  credentials: true,
+}));
+
+// Add a health check route
+app.get('/', (c) => c.json({ status: 'ok' }));
 
 // Helper to generate KV key
 const getCardKey = (userId: string, cardId: string) => `${userId}:${cardId}`;
 
 // Create a new card
 app.post('/cards', zValidator('json', CardSchema), async (c) => {
-  const card = c.req.valid('json');
-  const key = getCardKey(card.userId, card.id);
-  await c.env.CARDS.put(key, JSON.stringify(card));
-  return c.json(card, 201);
+  try {
+    const card = c.req.valid('json');
+    const key = getCardKey(card.userId, card.id);
+    await c.env.CARDS.put(key, JSON.stringify(card));
+    return c.json(card, 201);
+  } catch (error) {
+    console.error('Error creating card:', error);
+    return c.json({ error: 'Failed to create card' }, 500);
+  }
 });
 
 // Get all cards for a user
@@ -55,7 +70,6 @@ app.get('/cards/:userId', async (c) => {
         const value = await c.env.CARDS.get(key.name);
         if (value) {
           const parsedCard = JSON.parse(value) as Card;
-          // Validate the card has all required fields
           if (!parsedCard.id || !parsedCard.userId || !parsedCard.status) {
             console.error(`Invalid card data for key ${key.name}:`, parsedCard);
             continue;
@@ -75,60 +89,65 @@ app.get('/cards/:userId', async (c) => {
   }
 });
 
-// Get a specific card (though not explicitly requested, good for completeness if needed for updates)
+// Get a specific card
 app.get('/cards/:userId/:cardId', async (c) => {
-  const { userId, cardId } = c.req.param();
-  const key = getCardKey(userId, cardId);
-  const value = await c.env.CARDS.get(key);
-  if (!value) {
-    return c.json({ error: 'Card not found' }, 404);
+  try {
+    const { userId, cardId } = c.req.param();
+    const key = getCardKey(userId, cardId);
+    const value = await c.env.CARDS.get(key);
+    if (!value) {
+      return c.json({ error: 'Card not found' }, 404);
+    }
+    return c.json(JSON.parse(value));
+  } catch (error) {
+    console.error('Error getting card:', error);
+    return c.json({ error: 'Failed to get card' }, 500);
   }
-  return c.json(JSON.parse(value));
 });
-
 
 // Update a card
 app.put('/cards/:userId/:cardId', zValidator('json', CardSchema), async (c) => {
-  const cardData = c.req.valid('json');
-  const { userId, cardId } = c.req.param();
+  try {
+    const cardData = c.req.valid('json');
+    const { userId, cardId } = c.req.param();
 
-  if (cardData.userId !== userId || cardData.id !== cardId) {
-    return c.json({ error: 'Card ID or User ID mismatch in payload vs. path' }, 400);
+    if (cardData.userId !== userId || cardData.id !== cardId) {
+      return c.json({ error: 'Card ID or User ID mismatch in payload vs. path' }, 400);
+    }
+
+    const key = getCardKey(userId, cardId);
+    const existing = await c.env.CARDS.get(key);
+    
+    if (!existing) {
+      return c.json({ error: 'Card not found' }, 404);
+    }
+
+    await c.env.CARDS.put(key, JSON.stringify(cardData));
+    return c.json(cardData);
+  } catch (error) {
+    console.error('Error updating card:', error);
+    return c.json({ error: 'Failed to update card' }, 500);
   }
-
-  const key = getCardKey(userId, cardId);
-  
-  // Get existing card to ensure it exists
-  const existing = await c.env.CARDS.get(key);
-  if (!existing) {
-    return c.json({ error: 'Card not found' }, 404);
-  }
-
-  // Validate the status is a valid enum value
-  if (!['TO_APPLY', 'IN_PROGRESS', 'COMPLETED'].includes(cardData.status)) {
-    return c.json({ error: 'Invalid status value' }, 400);
-  }
-
-  // Store the updated card
-  await c.env.CARDS.put(key, JSON.stringify(cardData));
-  return c.json(cardData);
 });
 
 // Delete a card
 app.delete('/cards/:userId/:cardId', async (c) => {
-  const { userId, cardId } = c.req.param();
-  const key = getCardKey(userId, cardId);
-  await c.env.CARDS.delete(key);
-  return c.json({ success: true, id: cardId });
+  try {
+    const { userId, cardId } = c.req.param();
+    const key = getCardKey(userId, cardId);
+    
+    const existing = await c.env.CARDS.get(key);
+    if (!existing) {
+      return c.json({ error: 'Card not found' }, 404);
+    }
+
+    await c.env.CARDS.delete(key);
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting card:', error);
+    return c.json({ error: 'Failed to delete card' }, 500);
+  }
 });
 
-
-
-// Add a named variable for the export
-const worker = {
-  async fetch(request: Request, env: Env) {
-    return app.fetch(request, env);
-  }
-};
-
-export default worker;
+// Export the worker
+export default app;
