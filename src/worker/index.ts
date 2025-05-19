@@ -122,20 +122,13 @@ app.delete('/cards/:userId/:cardId', async (c) => {
   return c.json({ success: true, id: cardId });
 });
 
-// Add debug route to verify worker is running
-app.get('/', (c) => c.json({ status: 'Worker is running' }));
 
-// Add catch-all OPTIONS handler for CORS
-app.options('*', (c) => {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
-  });
-});
 
-export default {
-  fetch: app.fetch,
+// Add a named variable for the export
+const worker = {
+  async fetch(request: Request, env: Env) {
+    return app.fetch(request, env);
+  }
 };
+
+export default worker;

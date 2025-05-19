@@ -20,7 +20,6 @@ import KanbanBoard from './components/KanbanBoard';
 import UrlInput from './components/UrlInput';
 
 export default function Home() {
-  const [isSignedIn, setIsSignedIn] = useState(false);
   const [columns, setColumns] = useState<Column[]>([
     {
       id: 'to-apply',

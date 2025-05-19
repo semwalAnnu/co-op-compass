@@ -7,20 +7,19 @@ export default function AboutPage() {
       <section className="max-w-4xl mx-auto text-center mb-16">
         <h1 className="text-4xl font-bold mb-6">About Co-Op Compass</h1>
         <p className="text-xl text-gray-600 dark:text-gray-300">
-          Co-Op Compass is your personal co-op application navigator—designed for students by students. 
+          Co-Op Compass is your personal co-op application navigator&mdash;designed for students by students. 
           Track every deadline, organize your tasks in a drag-and-drop Kanban board, and get real-time 
-          updates on your application status—no more spreadsheets or sticky notes!
+          updates on your application status&mdash;no more spreadsheets or sticky notes!
         </p>
       </section>
 
-      {/* Why We Built It */}
       <section className="max-w-4xl mx-auto mb-16">
         <h2 className="text-2xl font-bold mb-4">Why We Built It</h2>
         <p className="text-gray-600 dark:text-gray-300">
-          In today's competitive co-op market, staying organized can mean the difference between 
+          In today&apos;s competitive co-op market, staying organized can mean the difference between 
           securing that dream placement or missing out. We saw how manual tracking often leads to 
           missed deadlines and lost opportunities, so we built Co-Op Compass to simplify the entire 
-          workflow—from research and application to offer acceptance.
+          workflow&mdash;from research and application to offer acceptance.
         </p>
       </section>
 
@@ -85,7 +84,7 @@ export default function AboutPage() {
       <section className="max-w-4xl mx-auto text-center">
         <h2 className="text-2xl font-bold mb-4">Get Involved</h2>
         <p className="text-gray-600 dark:text-gray-300 mb-6">
-          We're always improving! If you have feedback or want to contribute, open an issue on our 
+          We&apos;re always improving! If you have feedback or want to contribute, open an issue on our 
           GitHub or drop us a line at support@coopcompass.app.
         </p>
         <Link 

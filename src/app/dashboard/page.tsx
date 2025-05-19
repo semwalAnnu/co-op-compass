@@ -1,6 +1,6 @@
 'use client';
 
-import { UserButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import KanbanBoard from "@/app/components/KanbanBoard";
 import UrlInput from "@/app/components/UrlInput";
 import { useState, useEffect, useCallback } from 'react';

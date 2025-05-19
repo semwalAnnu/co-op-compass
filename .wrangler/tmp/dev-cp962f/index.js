@@ -6200,19 +6200,12 @@ app.delete("/cards/:userId/:cardId", async (c) => {
   await c.env.CARDS.delete(key);
   return c.json({ success: true, id: cardId });
 });
-app.get("/", (c) => c.json({ status: "Worker is running" }));
-app.options("*", (c) => {
-  return new Response(null, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
-    }
-  });
-});
-var worker_default = {
-  fetch: app.fetch
+var worker = {
+  async fetch(request, env) {
+    return app.fetch(request, env);
+  }
 };
+var worker_default = worker;
 
 // node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
 var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
@@ -6305,31 +6298,31 @@ var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
     this.#noRetry();
   }
 };
-function wrapExportedHandler(worker) {
+function wrapExportedHandler(worker2) {
   if (__INTERNAL_WRANGLER_MIDDLEWARE__ === void 0 || __INTERNAL_WRANGLER_MIDDLEWARE__.length === 0) {
-    return worker;
+    return worker2;
   }
   for (const middleware of __INTERNAL_WRANGLER_MIDDLEWARE__) {
     __facade_register__(middleware);
   }
   const fetchDispatcher = /* @__PURE__ */ __name(function(request, env, ctx) {
-    if (worker.fetch === void 0) {
+    if (worker2.fetch === void 0) {
       throw new Error("Handler does not export a fetch() function.");
     }
-    return worker.fetch(request, env, ctx);
+    return worker2.fetch(request, env, ctx);
   }, "fetchDispatcher");
   return {
-    ...worker,
+    ...worker2,
     fetch(request, env, ctx) {
       const dispatcher = /* @__PURE__ */ __name(function(type, init) {
-        if (type === "scheduled" && worker.scheduled !== void 0) {
+        if (type === "scheduled" && worker2.scheduled !== void 0) {
           const controller = new __Facade_ScheduledController__(
             Date.now(),
             init.cron ?? "",
             () => {
             }
           );
-          return worker.scheduled(controller, env, ctx);
+          return worker2.scheduled(controller, env, ctx);
         }
       }, "dispatcher");
       return __facade_invoke__(request, env, ctx, dispatcher, fetchDispatcher);
