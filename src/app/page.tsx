@@ -58,6 +58,24 @@ export default function Home() {
     });
   };
 
+  // Dummy props for KanbanBoard on the homepage
+  const dummyOnDeleteCard = async (cardId: string) => {
+    console.log('[Homepage] Attempted to delete card:', cardId); 
+    // No actual deletion logic for homepage context
+  };
+
+  const dummyOnUpdateCard = async (card: any) => { // Using any for Card type for simplicity here
+    console.log('[Homepage] Attempted to update card:', card);
+    // No actual update logic for homepage context
+  };
+
+  const dummyMapColumnIdToCardStatus = (columnId: string) => {
+    if (columnId === 'to-apply') return 'TO_APPLY';
+    if (columnId === 'in-progress') return 'IN_PROGRESS';
+    if (columnId === 'completed') return 'COMPLETED';
+    return 'TO_APPLY'; // Default
+  };
+
   redirect("/sign-in");
 
   return (
@@ -105,8 +123,15 @@ export default function Home() {
           {/* Kanban Board */}
           <section className="bg-gray-800 rounded-xl p-6">
             <h2 className="text-lg font-semibold text-gray-100 mb-4">Application Board</h2>
-            <KanbanBoard columns={columns} setColumns={setColumns} />
-          </section>
+            <KanbanBoard 
+              columns={columns} 
+              setColumns={setColumns} 
+              onDeleteCard={dummyOnDeleteCard}
+              onUpdateCard={dummyOnUpdateCard}
+              mapColumnIdToCardStatus={dummyMapColumnIdToCardStatus}
+              userId="anonymous" // Placeholder userId
+            />
+="max-w-7xl mx-auto px-4 sm:px          </section>
         </div>
       </main>
     </div>

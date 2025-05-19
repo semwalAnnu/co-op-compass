@@ -202,8 +202,14 @@ export default function DashboardPage() {
   };
 
   const handleDeleteCard = async (cardId: string) => {
-    if(!user) return;
+    if (!user) {
+      console.error('[DashboardPage] User not available for delete operation.');
+      return;
+    }
+    const userId = user.id;
     const originalColumns = columns;
+
+    // Optimistic UI update
     setColumns(prevColumns => 
       prevColumns.map(col => ({
         ...col,
@@ -212,16 +218,28 @@ export default function DashboardPage() {
     );
 
     try {
-      const response = await fetch(`/api/cards/${cardId}`, { method: 'DELETE' });
+      console.log(`[DashboardPage] Attempting to delete card: ${cardId} for user: ${userId}`);
+      const response = await fetch(`/api/cards/${userId}/${cardId}`, { method: 'DELETE' });
+      
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Error deleting card:", response.status, errorData);
-        setColumns(originalColumns);
+        let errorData = { error: `Failed to delete card. Status: ${response.status}` };
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          // If response is not JSON, use the status text or a generic message
+          errorData.error = response.statusText || errorData.error;
+        }
+        console.error("[DashboardPage] Error deleting card:", response.status, errorData);
+        setColumns(originalColumns); // Revert optimistic update
         throw new Error(errorData.error || `Failed to delete card. Status: ${response.status}`);
       }
+      console.log(`[DashboardPage] Successfully deleted card: ${cardId}`);
+      // No need to call fetchAndSetCards() if optimistic update is successful and server confirms
+      // However, if there was any chance of server-side changes beyond deletion, you might refetch.
     } catch (error) {
-      console.error("Error in handleDeleteCard try-catch:", error);
-      setColumns(originalColumns);
+      console.error("[DashboardPage] Error in handleDeleteCard try-catch:", error);
+      setColumns(originalColumns); // Revert optimistic update on any error
+      // Optionally, display an error message to the user
     }
   };
 
