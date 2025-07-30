@@ -8,12 +8,12 @@ export default function Nav() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed w-full bg-gray-800 backdrop-blur-sm z-50 shadow-sm">
+    <nav className="fixed w-full bg-[#1e293b] border-b border-[#334155] z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link 
             href="/" 
-            className="text-xl font-semibold text-white-900"
+            className="text-xl font-semibold text-white"
           >
             Co-Op Compass
           </Link>
@@ -22,7 +22,7 @@ export default function Nav() {
           <div className="hidden md:flex items-center space-x-4">
             <Link 
               href="/about"
-              className="text-white-600 hover:text-blue-600 transition-colors"
+              className="text-white hover:text-blue-300 transition-colors"
             >
               About
             </Link>
@@ -32,7 +32,7 @@ export default function Nav() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600"
+            className="md:hidden p-2 rounded-md text-white hover:text-blue-300"
             aria-label="Toggle menu"
           >
             <svg

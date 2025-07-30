@@ -1,360 +1,255 @@
 'use client';
 
 import { useUser } from "@clerk/nextjs";
-import KanbanBoard from "@/app/components/KanbanBoard";
-import UrlInput from "@/app/components/UrlInput";
 import { useState, useEffect, useCallback } from 'react';
-import type { Column, Application } from '@/types/User';
+import KanbanBoard from "@/components/KanbanBoard";
+import UrlInput from "@/components/UrlInput";
+import EditJobModal from "@/components/EditJobModal";
 import type { Card } from '@/types/User';
 
-// Define column IDs and titles for better organization
-const COLUMN_IDS = {
-  TO_APPLY: 'to-apply',
-  IN_PROGRESS: 'in-progress',
-  COMPLETED: 'completed'
-};
-
-const COLUMN_TITLES = {
-  [COLUMN_IDS.TO_APPLY]: 'To Apply',
-  [COLUMN_IDS.IN_PROGRESS]: 'In Progress',
-  [COLUMN_IDS.COMPLETED]: 'Completed'
-};
-
-// Helper to map card status to column ID
-const mapCardStatusToColumnId = (status: Card['status']): string => {
-  switch (status) {
-    case 'TO_APPLY':
-      return COLUMN_IDS.TO_APPLY;
-    case 'IN_PROGRESS':
-      return COLUMN_IDS.IN_PROGRESS;
-    case 'COMPLETED':
-      return COLUMN_IDS.COMPLETED;
-    default:
-      return COLUMN_IDS.TO_APPLY;
-  }
-};
-
-// Helper to map column ID to card status
-const mapColumnIdToCardStatus = (columnId: string): Card['status'] => {
-  switch (columnId) {
-    case COLUMN_IDS.TO_APPLY:
-      return 'TO_APPLY';
-    case COLUMN_IDS.IN_PROGRESS:
-      return 'IN_PROGRESS';
-    case COLUMN_IDS.COMPLETED:
-      return 'COMPLETED';
-    default:
-      return 'TO_APPLY';
-  }
-}
+// Define column configuration
+const COLUMNS = [
+  { id: 'TO_APPLY', title: 'To Apply', status: 'TO_APPLY' as const },
+  { id: 'IN_PROGRESS', title: 'In Progress', status: 'IN_PROGRESS' as const },
+  { id: 'COMPLETED', title: 'Completed', status: 'COMPLETED' as const },
+];
 
 export default function DashboardPage() {
   const { user } = useUser();
-  const [columns, setColumns] = useState<Column[]>(() => [
-    { id: COLUMN_IDS.TO_APPLY, title: COLUMN_TITLES[COLUMN_IDS.TO_APPLY], applications: [] },
-    { id: COLUMN_IDS.IN_PROGRESS, title: COLUMN_TITLES[COLUMN_IDS.IN_PROGRESS], applications: [] },
-    { id: COLUMN_IDS.COMPLETED, title: COLUMN_TITLES[COLUMN_IDS.COMPLETED], applications: [] },
-  ]);
+  const [cards, setCards] = useState<Card[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [editingCard, setEditingCard] = useState<Card | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const fetchAndSetCards = useCallback(async () => {
-    if (!user) {
-      console.log('No user found, skipping card fetch');
-      return;
-    }
+  const showError = (message: string) => {
+    console.error('Error:', message); // Log for debugging
+    setError(message);
+    setTimeout(() => setError(null), 5000);
+  };
+
+
+  const showSuccess = (message: string) => {
+    // For now, we'll use console.log. In a real app, you'd use a toast library
+    console.log('Success:', message);
+  };
+
+  const fetchCards = useCallback(async () => {
+    if (!user) return;
     
     setIsLoading(true);
     try {
-      console.log('Fetching cards for user:', user.id);
       const response = await fetch('/api/cards');
-      
       if (!response.ok) {
-        let errorMessage = `Failed to fetch cards. Status: ${response.status}`;
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-          console.error('Error fetching cards:', { status: response.status, error: errorData });
-        } catch (e) {
-          console.error('Error parsing error response:', e);
-        }
-        throw new Error(errorMessage);
+        throw new Error(`Failed to fetch cards: ${response.status}`);
       }
-
       const fetchedCards: Card[] = await response.json();
-      console.log(`Successfully fetched ${fetchedCards.length} cards`);
-      
-      const newColumns: Column[] = Object.values(COLUMN_IDS).map(id => ({
-        id,
-        title: COLUMN_TITLES[id],
-        applications: [],
-      }));
-
-      fetchedCards.forEach(card => {
-        const application: Application = { 
-          id: card.id, 
-          content: card.role,
-          company: card.company, 
-          url: card.url,
-        };
-        const columnId = mapCardStatusToColumnId(card.status);
-        const targetColumn = newColumns.find(col => col.id === columnId);
-        if (targetColumn) {
-          targetColumn.applications.push(application);
-        } else {
-          console.warn(`Card with status ${card.status} (id: ${card.id}) has no matching column`);
-          const toDoColumn = newColumns.find(col => col.id === COLUMN_IDS.TO_APPLY);
-          toDoColumn?.applications.push(application);
-        }
-      });
-
-      setColumns(newColumns);
+      setCards(fetchedCards);
     } catch (error) {
-      console.error('Error fetching and setting cards:', error);
-      // You might want to show an error message to the user here
+      console.error('Error fetching cards:', error);
+      showError('Failed to load job applications');
     } finally {
       setIsLoading(false);
     }
   }, [user]);
 
   useEffect(() => {
-    fetchAndSetCards();
-  }, [fetchAndSetCards]);
+    fetchCards();
+  }, [fetchCards]);
 
-  const handleAddApplication = async (jobTitle: string, company: string, url: string) => {
+  const handleAddJob = async (jobData: {
+    role: string;
+    company: string;
+    url: string;
+    location?: string;
+    deadline?: string;
+    status: Card['status'];
+  }) => {
     if (!user) return;
 
-    const newCardId = crypto.randomUUID();
-    console.log('[handleAddApplication] Generated client-side newCardId:', newCardId);
-    const newCardData: Card = {
-      id: newCardId,
+    const newCard: Card = {
+      id: crypto.randomUUID(),
       userId: user.id,
-      company,
-      role: jobTitle,
-      url,
-      status: 'TO_APPLY',
+      company: jobData.company,
+      role: jobData.role,
+      url: jobData.url,
+      status: jobData.status,
+      location: jobData.location,
+      deadline: jobData.deadline,
     };
 
-    const newApplicationForUI: Application = {
-        id: newCardData.id,
-        content: newCardData.role,
-        company: newCardData.company,
-        url: newCardData.url,
-    };
-    const targetColumnId = mapCardStatusToColumnId(newCardData.status);
-
-    setColumns(prevColumns => {
-      return prevColumns.map(col => 
-        col.id === targetColumnId
-          ? { ...col, applications: [newApplicationForUI, ...col.applications] }
-          : col
-      );
-    });
+    // Optimistic update
+    setCards(prev => [newCard, ...prev]);
 
     try {
-      console.log('[handleAddApplication] Sending newCardData to /api/cards:', newCardData);
       const response = await fetch('/api/cards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newCardData),
+        body: JSON.stringify(newCard),
       });
 
-      console.log('[handleAddApplication] Response from /api/cards status:', response.status);
-
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error JSON from /api/cards' }));
-        console.error("[handleAddApplication] Error adding application via /api/cards:", response.status, errorData);
-        // Revert optimistic update
-        setColumns(prevColumns => 
-            prevColumns.map(col => ({
-                ...col,
-                applications: col.applications.filter(app => app.id !== newCardId)
-            }))
-        );
-        throw new Error(errorData.error || `Failed to add card. Status: ${response.status}`);
+        throw new Error(`Failed to add card: ${response.status}`);
       }
-      
-      const savedCard: Card = await response.json();
-      console.log('[handleAddApplication] Received savedCard from /api/cards:', savedCard);
-      console.log(`[handleAddApplication] Comparing client ID (${newCardId}) vs server ID (${savedCard.id})`);
 
-      if (savedCard.id !== newCardId) {
-          console.warn("[handleAddApplication] Server returned a different ID for the new card. Updating UI.");
-          setColumns(prevColumns => {
-            // Remove temporary card
-            const columnsWithoutTemp = prevColumns.map(col => ({
-                ...col,
-                applications: col.applications.filter(app => app.id !== newCardId)
-            }));
-            // Add confirmed card
-            const actualTargetColumnId = mapCardStatusToColumnId(savedCard.status);
-            const appFromSavedCard: Application = {
-                id: savedCard.id,
-                content: savedCard.role,
-                company: savedCard.company,
-                url: savedCard.url
-            };
-            return columnsWithoutTemp.map(col => 
-                col.id === actualTargetColumnId
-                ? { ...col, applications: [appFromSavedCard, ...col.applications.filter(app => app.id !== savedCard.id)] } // Ensure not to duplicate if already present by some chance
-                : col
-            );
-          });
-      } else {
-        console.log("[handleAddApplication] Server confirmed the same ID. Optimistic update stands.");
-        // Potentially refresh or ensure data consistency if needed, though optimistic should cover it.
-        // fetchAndSetCards(); // Could be called here if there are doubts about overall consistency
-      }
+      const savedCard = await response.json();
+      // Update with server response
+      setCards(prev => prev.map(card => 
+        card.id === newCard.id ? savedCard : card
+      ));
+      showSuccess('Job added successfully');
     } catch (error) {
-      console.error("[handleAddApplication] Error in try-catch block:", error);
+      console.error('Error adding card:', error);
       // Revert optimistic update
-      setColumns(prevColumns => 
-        prevColumns.map(col => ({
-            ...col,
-            applications: col.applications.filter(app => app.id !== newCardId)
-        }))
-      );
-    }
-  };
-
-  const handleDeleteCard = async (cardId: string) => {
-    if (!user) {
-      console.error('[DashboardPage] User not available for delete operation.');
-      return;
-    }
-    const userId = user.id;
-    const originalColumns = columns;
-
-    // Optimistic UI update
-    setColumns(prevColumns => 
-      prevColumns.map(col => ({
-        ...col,
-        applications: col.applications.filter(app => app.id !== cardId)
-      }))
-    );
-
-    try {
-      console.log(`[DashboardPage] Attempting to delete card: ${cardId} for user: ${userId}`);
-      const response = await fetch(`/api/cards/${userId}/${cardId}`, { method: 'DELETE' });
-      
-      if (!response.ok) {
-        let errorData = { error: `Failed to delete card. Status: ${response.status}` };
-        try {
-          errorData = await response.json();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (_e) { 
-          errorData.error = response.statusText || errorData.error;
-        }
-        console.error("[DashboardPage] Error deleting card:", response.status, errorData);
-        setColumns(originalColumns); // Revert optimistic update
-        throw new Error(errorData.error || `Failed to delete card. Status: ${response.status}`);
-      }
-      console.log(`[DashboardPage] Successfully deleted card: ${cardId}`);
-      // No need to call fetchAndSetCards() if optimistic update is successful and server confirms
-      // However, if there was any chance of server-side changes beyond deletion, you might refetch.
-    } catch (error) {
-      console.error("[DashboardPage] Error in handleDeleteCard try-catch:", error);
-      setColumns(originalColumns); // Revert optimistic update on any error
-      // Optionally, display an error message to the user
+      setCards(prev => prev.filter(card => card.id !== newCard.id));
+      showError('Failed to add job. Please try again.');
     }
   };
 
   const handleUpdateCard = async (updatedCard: Card) => {
-    if (!user || updatedCard.userId !== user.id) {
-        console.error("User mismatch or not logged in for update");
-        return;
-    }
-    const originalColumns = columns;
+    if (!user || updatedCard.userId !== user.id) return;
 
-    setColumns(prevColumns => {
-      const columnsWithoutOld = prevColumns.map(col => ({
-        ...col,
-        applications: col.applications.filter(app => app.id !== updatedCard.id)
-      }));
-      const targetColumnId = mapCardStatusToColumnId(updatedCard.status);
-      const appForUpdateUI: Application = {
-          id: updatedCard.id,
-          content: updatedCard.role,
-          company: updatedCard.company,
-          url: updatedCard.url,
-      };
-      return columnsWithoutOld.map(col =>
-        col.id === targetColumnId
-          ? { ...col, applications: [appForUpdateUI, ...col.applications.filter(app => app.id !== updatedCard.id)] }
-          : col
-      );
-    });
-    
+    // Validate required fields
+    if (!updatedCard.id || !updatedCard.userId || !updatedCard.company || 
+        !updatedCard.role || !updatedCard.url || !updatedCard.status) {
+      showError('Invalid card data. Please check all required fields.');
+      return;
+    }
+
+    // Store original state for rollback
+    const originalCards = [...cards];
+
+    // Optimistic update
+    setCards(prev => prev.map(card => 
+      card.id === updatedCard.id ? updatedCard : card
+    ));
+
     try {
-      console.log('Updating card:', updatedCard);
       const response = await fetch(`/api/cards/${updatedCard.userId}/${updatedCard.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedCard),
       });
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Error updating card:", response.status, errorData);
-        setColumns(originalColumns);
-        throw new Error(errorData.error || `Failed to update card. Status: ${response.status}`);
+        throw new Error(errorData.error || `Failed to update card: ${response.status}`);
       }
-      const savedCard: Card = await response.json();
-      setColumns(prevColumns => {
-        const columnsWithoutOld = prevColumns.map(col => ({
-          ...col,
-          applications: col.applications.filter(app => app.id !== savedCard.id)
-        }));
-        const targetColumnId = mapCardStatusToColumnId(savedCard.status);
-        const appFromSaved: Application = {
-            id: savedCard.id,
-            content: savedCard.role,
-            company: savedCard.company,
-            url: savedCard.url,
-        };
-        return columnsWithoutOld.map(col =>
-          col.id === targetColumnId
-            ? { ...col, applications: [appFromSaved, ...col.applications.filter(app => app.id !== savedCard.id)] }
-            : col
-        );
-      });
+
+      const savedCard = await response.json();
+      setCards(prev => prev.map(card => 
+        card.id === updatedCard.id ? savedCard : card
+      ));
+      showSuccess('Job updated successfully');
     } catch (error) {
-      console.error("Error in handleUpdateCard try-catch:", error);
-      setColumns(originalColumns);
+      console.error('Error updating card:', error);
+      // Revert optimistic update
+      setCards(originalCards);
+      showError(error instanceof Error ? error.message : 'Failed to update job. Please try again.');
     }
   };
 
-  if (isLoading && !columns.some(c => c.applications.length > 0)) {
+  const handleDeleteCard = async (cardId: string) => {
+    if (!user) return;
+
+    // Store original state for rollback
+    const originalCards = [...cards];
+
+    // Optimistic update
+    setCards(prev => prev.filter(card => card.id !== cardId));
+
+    try {
+      const response = await fetch(`/api/cards/${user.id}/${cardId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to delete card: ${response.status}`);
+      }
+
+      showSuccess('Job deleted successfully');
+    } catch (error) {
+      console.error('Error deleting card:', error);
+      // Revert optimistic update
+      setCards(originalCards);
+      showError(error instanceof Error ? error.message : 'Failed to delete job. Please try again.');
+    }
+  };
+
+  const handleEditCard = (card: Card) => {
+    setEditingCard(card);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = (updatedCard: Card) => {
+    handleUpdateCard(updatedCard);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingCard(null);
+  };
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <p className="text-white text-xl">Loading applications...</p>
+      <div className="min-h-screen bg-background">
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-800 mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading your job applications...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-black/80 rounded-lg">
-        <div className="space-y-6">
-          <section className="bg-gray-800 rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-gray-100 mb-4">
-              Add New Application
-            </h2>
-            <UrlInput onAddApplication={handleAddApplication} />
-          </section>
-
-          <section className="bg-gray-800 rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-gray-100 mb-4">
-              Application Board
-            </h2>
-            <KanbanBoard 
-              columns={columns} 
-              setColumns={setColumns}
-              onDeleteCard={handleDeleteCard}
-              onUpdateCard={handleUpdateCard}
-              mapColumnIdToCardStatus={mapColumnIdToCardStatus}
-              userId={user?.id || ''}
-            />
-          </section>
+    <div className="min-h-screen bg-[#f8fafc]">
+      {/* Error Toast */}
+      {error && (
+        <div className="fixed top-4 right-4 z-50 bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-xl shadow-lg animate-fadeIn">
+          <div className="flex items-center">
+            <span className="text-sm font-medium">{error}</span>
+            <button 
+              onClick={() => setError(null)}
+              className="ml-4 text-destructive hover:text-destructive-foreground focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-opacity-50 rounded-full"
+            >
+              ×
+            </button>
+          </div>
         </div>
+      )}
+
+      <main className="container mx-auto px-6 py-8">
+        {cards.length === 0 && !isLoading && (
+          <div className="text-center py-12">
+            <p className="text-sm text-gray-400 italic mb-4">No jobs added yet. Paste a job posting URL to get started!</p>
+          </div>
+        )}
+
+        {/* Kanban Board */}
+        <div className="overflow-x-auto">
+          <KanbanBoard
+            columns={COLUMNS}
+            cards={cards}
+            onUpdateCard={handleUpdateCard}
+            onEditCard={handleEditCard}
+            onDeleteCard={handleDeleteCard}
+          />
+        </div>
+
+        {/* Add Job Dialog */}
+        <UrlInput onAddJob={handleAddJob} />
+
+        {/* Edit Job Modal */}
+        <EditJobModal
+          card={editingCard}
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          onSave={handleSaveEdit}
+        />
       </main>
+    </div>
   );
 }

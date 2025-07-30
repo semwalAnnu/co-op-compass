@@ -30,4 +30,7 @@ export interface Card {
   role: string;
   url: string;
   status: "TO_APPLY" | "IN_PROGRESS" | "COMPLETED";
+  location?: string;
+  deadline?: string;
+  companyLogo?: string;
 }

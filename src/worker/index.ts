@@ -11,7 +11,10 @@ const CardSchema = z.object({
   company: z.string(),
   role: z.string(),
   url: z.string(),
-  status: z.enum(['TO_APPLY', 'IN_PROGRESS', 'COMPLETED'])
+  status: z.enum(['TO_APPLY', 'IN_PROGRESS', 'COMPLETED']),
+  location: z.string().optional(),
+  deadline: z.string().optional(),
+  companyLogo: z.string().optional()
 });
 
 type Card = z.infer<typeof CardSchema>;
