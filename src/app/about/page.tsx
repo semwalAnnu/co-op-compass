@@ -6,7 +6,7 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="max-w-4xl mx-auto text-center mb-16">
         <h1 className="text-4xl font-bold mb-6">About Co-Op Compass</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300">
+        <p className="text-xl text-gray-600 dark:text-black-300">
           Co-Op Compass is your personal co-op application navigator&mdash;designed for students by students. 
           Track every deadline, organize your tasks in a drag-and-drop Kanban board, and get real-time 
           updates on your application status&mdash;no more spreadsheets or sticky notes!
@@ -15,7 +15,7 @@ export default function AboutPage() {
 
       <section className="max-w-4xl mx-auto mb-16">
         <h2 className="text-2xl font-bold mb-4">Why We Built It</h2>
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-black-600 dark:text-black-300">
           In today&apos;s competitive co-op market, staying organized can mean the difference between 
           securing that dream placement or missing out. We saw how manual tracking often leads to 
           missed deadlines and lost opportunities, so we built Co-Op Compass to simplify the entire 
@@ -37,7 +37,7 @@ export default function AboutPage() {
           ].map(([emoji, title, desc]) => (
             <div key={title} className="p-6 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
               <div className="text-3xl mb-2">{emoji}</div>
-              <h3 className="font-bold mb-2">{title}</h3>
+              <h3 className="font-bold text-white mb-2">{title}</h3>
               <p className="text-gray-600 dark:text-gray-300">{desc}</p>
             </div>
           ))}
@@ -59,7 +59,7 @@ export default function AboutPage() {
               </div>
               <div>
                 <h3 className="font-bold mb-1">{title}</h3>
-                <p className="text-gray-600 dark:text-gray-300">{desc}</p>
+                <p className="text-gray-600 dark:text-black-300">{desc}</p>
               </div>
             </div>
           ))}
@@ -70,7 +70,7 @@ export default function AboutPage() {
       <section className="max-w-4xl mx-auto mb-16">
         <div className="tech-stack">
           <h2 className="text-2xl font-bold mb-4">Built With</h2>
-          <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+          <ul className="space-y-2 text-gray-600 dark:text-black-300">
             <li>• Next.js 14 & React</li>
             <li>• Tailwind CSS</li>
             <li>• Cloudflare Workers + KV</li>
@@ -83,13 +83,13 @@ export default function AboutPage() {
       {/* CTA */}
       <section className="max-w-4xl mx-auto text-center">
         <h2 className="text-2xl font-bold mb-4">Get Involved</h2>
-        <p className="text-gray-600 dark:text-gray-300 mb-6">
+        <p className="text-gray-600 dark:text-black-300 mb-6">
           We&apos;re always improving! If you have feedback or want to contribute, open an issue on our 
           GitHub or drop us a line at support@coopcompass.app.
         </p>
         <Link 
           href="/dashboard" 
-          className="inline-block px-8 py-3 bg-primary text-white rounded-lg shadow-md hover:bg-primary-light transition-all"
+          className="inline-block px-8 py-3 bg-primary text-black rounded-lg shadow-md hover:bg-primary-light transition-all"
         >
           Try Co-Op Compass Now
         </Link>
