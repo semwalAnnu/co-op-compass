@@ -3,7 +3,7 @@
 Co-Op Compass is your personal co-op application navigator—**designed for students by students**.  
 Track every deadline, organize your tasks in a drag-and-drop Kanban board, and get real-time updates on your application status—**no more spreadsheets or sticky notes!**
 
- **Check it out live:** https://co-op-compass-tvb6.vercel.app/about
+ **Check it out live:** https://co-op-compass-tvb6.vercel.app
 
 ---
 
@@ -78,6 +78,6 @@ Open an issue to discuss major changes.
 ##  Connect
 
 If you'd like to collaborate or explore more features, feel free to reach out.  
-And don’t forget to visit: **https://co-op-compass-tvb6.vercel.app/about**
+And don’t forget to visit: **https://co-op-compass-tvb6.vercel.app**
 
 
