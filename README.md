@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+#  Co-Op Compass
 
-## Getting Started
+Co-Op Compass is your personal co-op application navigator—**designed for students by students**.  
+Track every deadline, organize your tasks in a drag-and-drop Kanban board, and get real-time updates on your application status—**no more spreadsheets or sticky notes!**
 
-First, run the development server:
+ **Check it out live:** https://co-op-compass-tvb6.vercel.app/about
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+##  Why I Built It
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+In today’s competitive co-op market, staying organized can mean the difference between landing your dream placement or missing it entirely.  
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+I saw students juggling messy spreadsheets and sticky notes—and losing track of key deadlines.  
+So I built **Co-Op Compass** to streamline the entire workflow—from research → application → interviews → offers.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+##  Key Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🔍 Dashboard Overview  
+See all your applications at a glance with filters, progress indicators, and quick insights.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+###  Kanban Workflow  
+Drag-and-drop roles through stages like **To Apply → Applied → Interview → Offer**.
 
-## Deploy on Vercel
+###  Real-Time Alerts  
+Instant notifications when deadlines are close or application statuses change.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+###  Secure Auth  
+Sign in with **GitHub OAuth**, backed by **JWT-secured sessions**.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+###  Serverless Scale  
+Built on **Cloudflare Workers + KV**, delivering ultra-fast, edge-first performance.
+
+###  Zero-Downtime Deploys  
+Continuous deployment with **Vercel**, validated through **Playwright E2E tests**.
+
+---
+
+##  How It Works
+
+1. **Sign Up & Connect**  
+   Create an account instantly via GitHub OAuth—no extra passwords.
+
+2. **Add Your Roles**  
+   Paste job links or fill out company, role, and deadline fields.
+
+3. **Track & Update**  
+   Move cards through your Kanban workflow and get automatic reminders before deadlines.
+
+---
+
+##  Built With
+
+- **Next.js 14 + React**
+- **Tailwind CSS**
+- **Cloudflare Workers + KV**
+- **Vercel**
+- **GitHub Actions**
+- **Playwright E2E Testing**
+
+---
+
+## 📄 License
+
+MIT License — free to use, modify, and build upon.
+
+---
+
+##  Contributing
+
+Pull requests and feature suggestions are welcome!  
+Open an issue to discuss major changes.
+
+---
+
+##  Connect
+
+If you'd like to collaborate or explore more features, feel free to reach out.  
+And don’t forget to visit: **https://co-op-compass-tvb6.vercel.app/about**
+
+
